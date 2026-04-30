@@ -1,32 +1,50 @@
 name: Aprendendo Artefatos
 
 on: 
-  push:
   workflow_dispatch:
 
+  schedule:
+    - cron: '0 2 * * *'
+
+  push:
+    branches:
+      - 'feature/**' 
+    paths:
+      - 'src/**'    
+      - '!src/docs/**' 
+
 jobs:
-  gerador: 
-    name: Produzir Arquivo
+  job_gerador:
+    name: O Produtor de Artefatos
     runs-on: ubuntu-latest
     steps:
-      - name: Criar relatório de teste
-        run: echo "Sucesso! Artefato gerado em $(date)" > relatorio.txt
+      # Passo 2 da Etapa 3: Simulando a build
+      - name: Simular construção do projeto
+        run: |
+          mkdir saida_build
+          echo "Relatório de Performance: 100%" > saida_build/relatorio1.txt
+          echo "Relatório de Segurança: OK" > saida_build/relatorio2.txt
 
-      - name: Salvar Artefato
-        uses: actions/upload-artifact@v4 
+      # Passo 3 e 4 da Etapa 3: Upload oficial
+      - name: Salvar relatórios no servidor
+        uses: actions/upload-artifact@v4
         with:
-          name: meu-pacote 
-          path: relatorio.txt 
+          name: meus-relatorios-oficiais
+          path: saida_build/
 
-  consumidor: 
-    name: Ler Arquivo
+  job_auditoria:
+    name: O Consumidor de Artefatos
     runs-on: ubuntu-latest
-    needs: [gerador] 
+    needs: [job_gerador] # Regra 1 da Etapa 4: Aguarda o anterior
     steps:
-      - name: Recuperar Artefato
-        uses: actions/download-artifact@v4 
+      # Passo 2 da Etapa 4: Download oficial
+      - name: Baixar pacote de relatórios
+        uses: actions/download-artifact@v4
         with:
-          name: meu-pacote 
+          name: meus-relatorios-oficiais
 
-      - name: Exibir Conteúdo
-        run: cat relatorio.txt
+      # Passo 3 da Etapa 4: Prova de sobrevivência
+      - name: Validar arquivos sobreviventes
+        run: |
+          ls -R
+          cat relatorio1.txt
